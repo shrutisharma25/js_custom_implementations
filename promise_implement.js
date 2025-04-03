@@ -1,23 +1,3 @@
-// This implementation simplifies the core of a promise:
-//
-// 1: State Management:
-//      "pending": Initial state.
-//      "fulfilled": When resolved.
-//      "rejected": When rejected.
-//
-// 2: Handlers Array:
-//      Stores .then() callbacks to run when resolved/rejected.
-//
-// 3: Resolve & Reject Functions:
-//      Change state and execute stored handlers.
-//
-// 4: .then() Method:
-//      If already resolved/rejected, execute the handler immediately.
-//      Otherwise, store it to run later.
-//
-// 5: .catch() Method:
-//      Just calls .then() with null for success.
-
 function MyPromise(executor) {
   /*
    * Initial state of the promise.
@@ -99,8 +79,17 @@ function MyPromise(executor) {
 /*
  * Example usage:
  * - Creates a new promise that resolves after 1 second.
- * - Then logs the result or catches any errors.
+ * - When resolved, it logs the result using console.log.
+ * - If an error occurs, it logs the error using console.error.
  */
-MyPromise((resolve) => setTimeout(() => resolve('Success!'), 1000))
-  .then(console.log) // Logs 'Success!' after 1 second
-  .catch(console.error); // Catches any errors (if any)
+MyPromise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('Success!'); // Resolves after 1 second
+  }, 1000);
+})
+  .then((result) => {
+    console.log(result); // Logs "Success!"
+  })
+  .catch((error) => {
+    console.error(error); // Logs any errors if they occur
+  });
