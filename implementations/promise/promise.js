@@ -1,3 +1,68 @@
+function MyPromise(executor) {
+  let state = 'pending'; // "pending", "fulfilled", or "rejected"
+  let value; // Stores resolved or rejected value
+  let handlers = []; // Stores .then() or .catch() handlers
+
+  function resolve(val) {
+    if (state !== 'pending') return;
+    state = 'fulfilled';
+    value = val;
+    handlers.forEach((h) => h()); // Execute stored handlers
+  }
+
+  function reject(err) {
+    if (state !== 'pending') return;
+    state = 'rejected';
+    value = err;
+    handlers.forEach((h) => h()); // Execute stored handlers
+  }
+
+  executor(resolve, reject); // Run executor immediately
+
+  return {
+    then(onFulfilled, onRejected) {
+      function handle() {
+        if (state === 'fulfilled' && onFulfilled) {
+          onFulfilled(value);
+        } else if (state === 'rejected' && onRejected) {
+          onRejected(value);
+        }
+      }
+
+      if (state === 'pending') {
+        handlers.push(handle); // Store if still pending
+      } else {
+        handle(); // Execute immediately if already settled
+      }
+    },
+
+    catch(onRejected) {
+      return this.then(null, onRejected);
+    },
+  };
+}
+
+let promise = MyPromise((resolve, reject) => {
+  setTimeout(() => {
+    let number = Math.floor(Math.random() * 20); // 0–19
+    console.log('Generated number:', number);
+
+    if (number < 10) {
+      reject(`Number too low: ${number}`);
+    } else {
+      resolve(`Number is acceptable: ${number}`);
+    }
+  }, 2000);
+});
+
+promise.then((result) => {
+  console.log('Resolved:', result);
+});
+
+promise.catch((error) => {
+  console.log('Rejected:', error);
+});
+
 // function MyPromise(executor) {
 //   /*
 //    * Initial state of the promise.
@@ -93,62 +158,3 @@
 //   .catch((error) => {
 //     console.error(error); // Logs any errors if they occur
 //   });
-
-function MyPromise(executor) {
-  let state = 'pending'; // "pending", "fulfilled", or "rejected"
-  let value; // Stores resolved or rejected value
-  let handlers = []; // Stores .then() or .catch() handlers
-
-  function resolve(val) {
-    if (state !== 'pending') return;
-    state = 'fulfilled';
-    value = val;
-    handlers.forEach((h) => h()); // Execute stored handlers
-  }
-
-  function reject(err) {
-    if (state !== 'pending') return;
-    state = 'rejected';
-    value = err;
-    handlers.forEach((h) => h()); // Execute stored handlers
-  }
-
-  executor(resolve, reject); // Run executor immediately
-
-  return {
-    then(onFulfilled, onRejected) {
-      function handle() {
-        if (state === 'fulfilled' && onFulfilled) {
-          onFulfilled(value);
-        } else if (state === 'rejected' && onRejected) {
-          onRejected(value);
-        }
-      }
-
-      if (state === 'pending') {
-        handlers.push(handle); // Store if still pending
-      } else {
-        handle(); // Execute immediately if already settled
-      }
-    },
-
-    catch(onRejected) {
-      return this.then(null, onRejected);
-    },
-  };
-}
-
-// Example usage:
-let promise = MyPromise((resolve, reject) => {
-  setTimeout(() => {
-    resolve('Success!'); // Resolves after 1 second
-  }, 1000);
-});
-
-promise.then((result) => {
-  console.log(result); // Logs "Success!"
-});
-
-promise.catch((error) => {
-  console.error(error);
-});
